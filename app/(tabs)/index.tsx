@@ -56,6 +56,13 @@ export default function HomeScreen() {
         <Text style={styles.label}>연속 학습 일수 (Streak)</Text>
         <Text style={styles.value}>{streak}일</Text>
       </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>배운 개념을 실제 기업에 적용해보기</Text>
+        <Pressable style={styles.secondaryButton} onPress={() => router.push('/stock/search')}>
+          <Text style={styles.secondaryButtonText}>실제 기업 찾기</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -85,4 +92,13 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   progressBarWrap: { marginTop: 8 },
+  secondaryButton: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#222',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  secondaryButtonText: { color: '#222', fontSize: 16, fontWeight: '600' },
 });
