@@ -13,10 +13,10 @@ interface QuizOutcome {
 }
 
 export default function QuizScreen() {
-  const { recordQuizResult } = useProgress();
+  const { recordQuizResult, skillLevel } = useProgress();
   const [attempt, setAttempt] = useState(0);
   const [session, setSession] = useState(() =>
-    createMixedQuizSession({ count: QUIZ_CONFIG.defaultQuestionCount })
+    createMixedQuizSession({ count: QUIZ_CONFIG.defaultQuestionCount, skillLevel: skillLevel ?? 'beginner' })
   );
   const [outcome, setOutcome] = useState<QuizOutcome | null>(null);
 
@@ -28,7 +28,9 @@ export default function QuizScreen() {
   const handleRestart = () => {
     setOutcome(null);
     // Question Selection Engine이 최근 출제 이력을 피해 가능한 다른 문제 조합을 골라준다.
-    setSession(createMixedQuizSession({ count: QUIZ_CONFIG.defaultQuestionCount }));
+    setSession(
+      createMixedQuizSession({ count: QUIZ_CONFIG.defaultQuestionCount, skillLevel: skillLevel ?? 'beginner' })
+    );
     setAttempt((prev) => prev + 1);
   };
 

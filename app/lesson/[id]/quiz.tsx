@@ -17,12 +17,17 @@ interface QuizOutcome {
 export default function LessonQuizScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { recordQuizResult } = useProgress();
+  const { recordQuizResult, skillLevel } = useProgress();
   const [outcome, setOutcome] = useState<QuizOutcome | null>(null);
 
   // Question Selection Engine이 이 화면이 열릴 때 한 번만 문제를 선택하도록
   // useState 초기화 함수 안에서 세션을 생성한다 (재렌더링 시 문제가 바뀌지 않도록).
-  const [session] = useState(() => createQuizSession(id ?? '', { count: QUIZ_CONFIG.defaultQuestionCount }));
+  const [session] = useState(() =>
+    createQuizSession(id ?? '', {
+      count: QUIZ_CONFIG.defaultQuestionCount,
+      skillLevel: skillLevel ?? 'beginner',
+    })
+  );
 
   const lesson = lessons.find((item) => item.id === id);
 

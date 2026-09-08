@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { useProgress } from '../../src/services/progress';
 import { lessons } from '../../src/data/lessons';
 import { XPDisplay } from '../../src/components/XPDisplay';
@@ -7,7 +7,11 @@ import { ProgressBar } from '../../src/components/ProgressBar';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { streak, completedLessonIds } = useProgress();
+  const { streak, completedLessonIds, skillLevel, isHydrated } = useProgress();
+
+  if (isHydrated && skillLevel === null) {
+    return <Redirect href="/skill-test" />;
+  }
 
   const todayLesson = lessons.find((lesson) => !completedLessonIds.includes(lesson.id));
   const completedCount = completedLessonIds.length;
