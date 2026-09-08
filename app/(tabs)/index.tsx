@@ -2,10 +2,11 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useProgress } from '../../src/services/progress';
 import { lessons } from '../../src/data/lessons';
+import { LevelProgress } from '../../src/components/LevelProgress';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { level, xp, streak, completedLessonIds } = useProgress();
+  const { xp, streak, completedLessonIds } = useProgress();
 
   const todayLesson =
     lessons.find((lesson) => !completedLessonIds.includes(lesson.id)) ?? lessons[0];
@@ -20,8 +21,7 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>현재 Level</Text>
-        <Text style={styles.value}>{level}</Text>
+        <LevelProgress />
       </View>
 
       <View style={styles.section}>

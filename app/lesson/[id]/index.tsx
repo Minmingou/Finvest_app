@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { lessons } from '../../src/data/lessons';
-import { useProgress } from '../../src/services/progress';
+import { lessons } from '../../../src/data/lessons';
+import { useProgress } from '../../../src/services/progress';
 
 export default function LessonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { completeLesson } = useProgress();
+  const [showQuizPrompt, setShowQuizPrompt] = useState(false);
 
   const lesson = lessons.find((item) => item.id === id);
 
@@ -20,8 +22,29 @@ export default function LessonDetailScreen() {
 
   const handleComplete = () => {
     completeLesson(lesson.id);
-    router.replace('/');
+    setShowQuizPrompt(true);
   };
+
+  if (showQuizPrompt) {
+    return (
+      <View style={styles.promptContainer}>
+        <Text style={styles.promptTitle}>학습 완료! 🎉</Text>
+        <Text style={styles.promptXp}>+20 XP를 획득했어요.</Text>
+        <Text style={styles.promptQuestion}>배운 내용을 퀴즈로 테스트해볼까요?</Text>
+
+        <Pressable
+          style={styles.button}
+          onPress={() => router.replace(`/lesson/${lesson.id}/quiz`)}
+        >
+          <Text style={styles.buttonText}>퀴즈 풀어보기</Text>
+        </Pressable>
+
+        <Pressable style={styles.secondaryButton} onPress={() => router.replace('/')}>
+          <Text style={styles.secondaryButtonText}>다음에 할게요</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -82,4 +105,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  promptContainer: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  promptTitle: { fontSize: 24, fontWeight: 'bold', textAlign: 'center' },
+  promptXp: { fontSize: 16, color: '#666', textAlign: 'center', marginTop: 12 },
+  promptQuestion: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 24,
+    marginBottom: 32,
+  },
+  secondaryButton: {
+    marginTop: 12,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  secondaryButtonText: { color: '#888', fontSize: 15 },
 });

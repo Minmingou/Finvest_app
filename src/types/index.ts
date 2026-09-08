@@ -14,6 +14,7 @@ export interface Lesson {
 
 export interface QuizQuestion {
   id: string;
+  lessonId: string;
   question: string;
   options: string[];
   correctIndex: number;

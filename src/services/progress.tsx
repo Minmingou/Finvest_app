@@ -11,11 +11,13 @@ interface ProgressState {
 
 interface ProgressContextValue extends ProgressState {
   completeLesson: (lessonId: string) => void;
-  recordQuizResult: (score: number, total: number) => void;
+  /** 퀴즈 결과를 기록하고 정답 수에 비례한 XP를 지급한 뒤, 지급된 XP를 반환한다. */
+  recordQuizResult: (score: number, total: number) => number;
 }
 
 const XP_PER_LESSON = 20;
-const XP_PER_LEVEL = 100;
+const XP_PER_CORRECT_ANSWER = 10;
+export const XP_PER_LEVEL = 100;
 
 // 임시 초기 데이터 (아직 DB/백엔드 연동 전)
 const initialState: ProgressState = {
@@ -50,11 +52,18 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const recordQuizResult = (score: number, total: number) => {
-    setState((prev) => ({
-      ...prev,
-      quizResults: [...prev.quizResults, { score, total }],
-    }));
+  const recordQuizResult = (score: number, total: number): number => {
+    const xpEarned = score * XP_PER_CORRECT_ANSWER;
+    setState((prev) => {
+      const nextXp = prev.xp + xpEarned;
+      return {
+        ...prev,
+        xp: nextXp,
+        level: levelFromXp(nextXp),
+        quizResults: [...prev.quizResults, { score, total }],
+      };
+    });
+    return xpEarned;
   };
 
   const value = useMemo<ProgressContextValue>(
