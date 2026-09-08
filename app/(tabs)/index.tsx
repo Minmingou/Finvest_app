@@ -15,7 +15,7 @@ export default function HomeScreen() {
       <Text style={styles.brand}>Stock5</Text>
 
       <View style={styles.section}>
-        <Text style={styles.label}>오늘의 학습</Text>
+        <Text style={styles.label}>오늘의 추천 학습</Text>
         <Text style={styles.value}>{todayLesson.title}</Text>
       </View>
 
@@ -32,6 +32,13 @@ export default function HomeScreen() {
       <View style={styles.section}>
         <Text style={styles.label}>연속 학습 일수 (Streak)</Text>
         <Text style={styles.value}>{streak}일</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>완료한 학습 수</Text>
+        <Text style={styles.value}>
+          {completedLessonIds.length} / {lessons.length}
+        </Text>
       </View>
 
       <Pressable

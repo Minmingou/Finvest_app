@@ -11,9 +11,19 @@ export default function LearnScreen() {
   const renderItem = ({ item }: { item: Lesson }) => {
     const isCompleted = completedLessonIds.includes(item.id);
     return (
-      <Pressable style={styles.item} onPress={() => router.push(`/lesson/${item.id}`)}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemStatus}>{isCompleted ? '완료' : '미완료'}</Text>
+      <Pressable style={styles.card} onPress={() => router.push(`/lesson/${item.id}`)}>
+        <Text style={styles.cardTitle}>{item.title}</Text>
+
+        <View style={styles.metaRow}>
+          <Text style={styles.metaText}>난이도 {item.difficulty}</Text>
+          <Text style={styles.metaText}>{item.estimatedMinutes}분</Text>
+        </View>
+
+        <View style={styles.statusRow}>
+          <Text style={[styles.statusBadge, isCompleted && styles.statusBadgeCompleted]}>
+            {isCompleted ? '완료' : '시작하기'}
+          </Text>
+        </View>
       </Pressable>
     );
   };
@@ -33,12 +43,28 @@ export default function LearnScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   list: { gap: 12 },
-  item: {
+  card: {
     padding: 16,
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
   },
-  itemTitle: { fontSize: 16, fontWeight: '600' },
-  itemStatus: { fontSize: 12, color: '#888', marginTop: 4 },
+  cardTitle: { fontSize: 16, fontWeight: '600' },
+  metaRow: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  metaText: { fontSize: 12, color: '#888' },
+  statusRow: { marginTop: 12, alignItems: 'flex-end' },
+  statusBadge: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#222',
+    borderWidth: 1,
+    borderColor: '#222',
+    borderRadius: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  statusBadgeCompleted: {
+    color: '#2e7d32',
+    borderColor: '#2e7d32',
+  },
 });
