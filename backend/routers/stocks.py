@@ -8,8 +8,9 @@ router = APIRouter()
 
 
 @router.get("/search")
-def search(q: str = Query(..., min_length=1)) -> dict:
-    return ok([s.model_dump() for s in search_stocks(q)])
+async def search(q: str = Query(..., min_length=1)) -> dict:
+    results = await search_stocks(q)
+    return ok([s.model_dump() for s in results])
 
 
 @router.get("/{code}/price")

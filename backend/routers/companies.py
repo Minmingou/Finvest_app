@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.get("/{code}/financials")
 async def financials(code: str) -> dict:
-    stock = find_stock(code)
+    stock = await find_stock(code)
     if stock is None:
         raise ApiError("STOCK_NOT_FOUND", "종목을 찾을 수 없습니다.", status_code=404)
 

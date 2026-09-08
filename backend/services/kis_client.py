@@ -56,7 +56,7 @@ async def get_price(code: str) -> StockPrice:
     if not output or body.get("rt_cd") != "0":
         raise ApiError("STOCK_NOT_FOUND", "종목을 찾을 수 없습니다.", status_code=404)
 
-    stock = find_stock(code)
+    stock = await find_stock(code)
     price = StockPrice(
         code=code,
         name=output.get("hts_kor_isnm") or (stock.name if stock else code),
