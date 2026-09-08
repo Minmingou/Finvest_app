@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { QuizQuestion } from '../types';
+import { Question, UserQuestionHistoryEntry } from '../types';
 
 interface QuizRunnerProps {
-  questions: QuizQuestion[];
-  onFinish: (score: number, total: number) => void;
+  questions: Question[];
+  onFinish: (score: number, total: number, history: UserQuestionHistoryEntry[]) => void;
 }
 
 export function QuizRunner({ questions, onFinish }: QuizRunnerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
+  const [history, setHistory] = useState<UserQuestionHistoryEntry[]>([]);
+  const [questionStartedAt, setQuestionStartedAt] = useState(() => Date.now());
 
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex === questions.length - 1;
@@ -18,18 +20,32 @@ export function QuizRunner({ questions, onFinish }: QuizRunnerProps) {
   const handleSelect = (optionIndex: number) => {
     if (selectedIndex !== null) return;
     setSelectedIndex(optionIndex);
-    if (optionIndex === currentQuestion.correctIndex) {
+
+    const isCorrect = optionIndex === currentQuestion.correctAnswer;
+    if (isCorrect) {
       setScore((prev) => prev + 1);
     }
+    setHistory((prev) => [
+      ...prev,
+      {
+        questionId: currentQuestion.id,
+        lessonId: currentQuestion.lessonId,
+        isCorrect,
+        answeredAt: Date.now(),
+        selectedAnswer: optionIndex,
+        timeSpent: Date.now() - questionStartedAt,
+      },
+    ]);
   };
 
   const handleNext = () => {
     if (isLastQuestion) {
-      onFinish(score, questions.length);
+      onFinish(score, questions.length, history);
       return;
     }
     setCurrentIndex((prev) => prev + 1);
     setSelectedIndex(null);
+    setQuestionStartedAt(Date.now());
   };
 
   return (
@@ -41,7 +57,7 @@ export function QuizRunner({ questions, onFinish }: QuizRunnerProps) {
 
       {currentQuestion.options.map((option, index) => {
         const isSelected = selectedIndex === index;
-        const isCorrect = index === currentQuestion.correctIndex;
+        const isCorrect = index === currentQuestion.correctAnswer;
         const showState = selectedIndex !== null;
 
         return (
@@ -58,6 +74,13 @@ export function QuizRunner({ questions, onFinish }: QuizRunnerProps) {
           </Pressable>
         );
       })}
+
+      {selectedIndex !== null && (
+        <View style={styles.explanationBox}>
+          <Text style={styles.explanationLabel}>해설</Text>
+          <Text style={styles.explanationText}>{currentQuestion.explanation}</Text>
+        </View>
+      )}
 
       {selectedIndex !== null && (
         <Pressable style={styles.button} onPress={handleNext}>
@@ -81,6 +104,14 @@ const styles = StyleSheet.create({
   optionCorrect: { borderColor: '#2e7d32', backgroundColor: '#e8f5e9' },
   optionWrong: { borderColor: '#c62828', backgroundColor: '#ffebee' },
   optionText: { fontSize: 15 },
+  explanationBox: {
+    marginTop: 8,
+    padding: 14,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+  },
+  explanationLabel: { fontSize: 12, fontWeight: '600', color: '#666', marginBottom: 4 },
+  explanationText: { fontSize: 14, lineHeight: 21 },
   button: {
     marginTop: 16,
     backgroundColor: '#222',

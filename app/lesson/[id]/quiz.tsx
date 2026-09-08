@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { lessons } from '../../../src/data/lessons';
-import { quizQuestions } from '../../../src/data/quiz';
 import { useProgress } from '../../../src/services/progress';
 import { QuizRunner } from '../../../src/components/QuizRunner';
-import { LevelProgress } from '../../../src/components/LevelProgress';
+import { XPDisplay } from '../../../src/components/XPDisplay';
+import { createQuizSession, QUIZ_CONFIG } from '../../../src/utils/questionEngine';
+import { UserQuestionHistoryEntry } from '../../../src/types';
 
 interface QuizOutcome {
   score: number;
@@ -19,10 +20,13 @@ export default function LessonQuizScreen() {
   const { recordQuizResult } = useProgress();
   const [outcome, setOutcome] = useState<QuizOutcome | null>(null);
 
-  const lesson = lessons.find((item) => item.id === id);
-  const questions = quizQuestions.filter((question) => question.lessonId === id);
+  // Question Selection Engine이 이 화면이 열릴 때 한 번만 문제를 선택하도록
+  // useState 초기화 함수 안에서 세션을 생성한다 (재렌더링 시 문제가 바뀌지 않도록).
+  const [session] = useState(() => createQuizSession(id ?? '', { count: QUIZ_CONFIG.defaultQuestionCount }));
 
-  if (!lesson || questions.length === 0) {
+  const lesson = lessons.find((item) => item.id === id);
+
+  if (!lesson || session.questions.length === 0) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>퀴즈를 찾을 수 없습니다.</Text>
@@ -33,7 +37,7 @@ export default function LessonQuizScreen() {
     );
   }
 
-  const handleFinish = (score: number, total: number) => {
+  const handleFinish = (score: number, total: number, _history: UserQuestionHistoryEntry[]) => {
     const xpEarned = recordQuizResult(score, total);
     setOutcome({ score, total, xpEarned });
   };
@@ -51,7 +55,7 @@ export default function LessonQuizScreen() {
         )}
 
         <View style={styles.progressBox}>
-          <LevelProgress />
+          <XPDisplay />
         </View>
 
         <Pressable style={styles.button} onPress={() => router.replace('/')}>
@@ -64,7 +68,7 @@ export default function LessonQuizScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.lessonTitle}>{lesson.title} 퀴즈</Text>
-      <QuizRunner questions={questions} onFinish={handleFinish} />
+      <QuizRunner questions={session.questions} onFinish={handleFinish} />
     </View>
   );
 }

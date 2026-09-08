@@ -3,25 +3,34 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { lessons } from '../../../src/data/lessons';
 import { useProgress } from '../../../src/services/progress';
+import { XP_PER_LESSON } from '../../../src/utils/xp';
 
 export default function LessonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { completeLesson } = useProgress();
+  const { completeLesson, completedLessonIds } = useProgress();
   const [showQuizPrompt, setShowQuizPrompt] = useState(false);
+  const [xpEarned, setXpEarned] = useState(0);
 
-  const lesson = lessons.find((item) => item.id === id);
+  const lessonIndex = lessons.findIndex((item) => item.id === id);
+  const lesson = lessonIndex >= 0 ? lessons[lessonIndex] : undefined;
 
   if (!lesson) {
     return (
       <View style={styles.container}>
         <Text>학습 콘텐츠를 찾을 수 없습니다.</Text>
+        <Pressable style={styles.button} onPress={() => router.replace('/learn')}>
+          <Text style={styles.buttonText}>Learn으로 돌아가기</Text>
+        </Pressable>
       </View>
     );
   }
 
+  const isCompleted = completedLessonIds.includes(lesson.id);
+
   const handleComplete = () => {
-    completeLesson(lesson.id);
+    const granted = completeLesson(lesson.id);
+    setXpEarned(granted ? XP_PER_LESSON : 0);
     setShowQuizPrompt(true);
   };
 
@@ -29,7 +38,7 @@ export default function LessonDetailScreen() {
     return (
       <View style={styles.promptContainer}>
         <Text style={styles.promptTitle}>학습 완료! 🎉</Text>
-        <Text style={styles.promptXp}>+20 XP를 획득했어요.</Text>
+        <Text style={styles.promptXp}>+{xpEarned} XP를 획득했어요.</Text>
         <Text style={styles.promptQuestion}>배운 내용을 퀴즈로 테스트해볼까요?</Text>
 
         <Pressable
@@ -48,6 +57,7 @@ export default function LessonDetailScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.lessonOrder}>Lesson {lessonIndex + 1}</Text>
       <Text style={styles.title}>{lesson.title}</Text>
 
       <View style={styles.metaRow}>
@@ -57,8 +67,8 @@ export default function LessonDetailScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>핵심 개념</Text>
-        <Text style={styles.sectionText}>{lesson.summary}</Text>
+        <Text style={styles.sectionLabel}>한 줄 설명</Text>
+        <Text style={styles.sectionText}>{lesson.description}</Text>
       </View>
 
       <View style={styles.section}>
@@ -67,14 +77,25 @@ export default function LessonDetailScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>실제 투자 예시</Text>
+        <Text style={styles.sectionLabel}>예시</Text>
         <Text style={styles.sectionText}>{lesson.example}</Text>
       </View>
 
-      <View style={[styles.section, styles.recapBox]}>
-        <Text style={styles.sectionLabel}>핵심 정리</Text>
-        <Text style={styles.sectionText}>{lesson.summary}</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>핵심 포인트</Text>
+        {lesson.keyPoints.map((point, index) => (
+          <Text key={index} style={styles.bulletText}>
+            {'•'} {point}
+          </Text>
+        ))}
       </View>
+
+      <View style={[styles.section, styles.recapBox]}>
+        <Text style={styles.sectionLabel}>투자자가 기억해야 할 것</Text>
+        <Text style={styles.sectionText}>{lesson.takeaway}</Text>
+      </View>
+
+      {isCompleted && <Text style={styles.completedNotice}>이미 완료한 학습입니다.</Text>}
 
       <Pressable style={styles.button} onPress={handleComplete}>
         <Text style={styles.buttonText}>학습 완료</Text>
@@ -85,18 +106,21 @@ export default function LessonDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold' },
+  lessonOrder: { fontSize: 13, color: '#aaa', fontWeight: '700' },
+  title: { fontSize: 22, fontWeight: 'bold', marginTop: 4 },
   metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 6 },
   metaText: { fontSize: 13, color: '#888' },
   metaDivider: { fontSize: 13, color: '#ccc' },
   section: { marginTop: 24 },
   sectionLabel: { fontSize: 14, fontWeight: '600', color: '#666', marginBottom: 6 },
   sectionText: { fontSize: 16, lineHeight: 24 },
+  bulletText: { fontSize: 15, lineHeight: 24 },
   recapBox: {
     backgroundColor: '#f5f5f5',
     borderRadius: 8,
     padding: 14,
   },
+  completedNotice: { marginTop: 20, fontSize: 13, color: '#2e7d32', textAlign: 'center' },
   button: {
     marginTop: 32,
     backgroundColor: '#222',

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import { QuizResult } from '../types';
+import { XP_PER_LESSON, XP_PER_CORRECT_ANSWER, levelFromXp } from '../utils/xp';
 
 interface ProgressState {
   level: number;
@@ -10,14 +11,11 @@ interface ProgressState {
 }
 
 interface ProgressContextValue extends ProgressState {
-  completeLesson: (lessonId: string) => void;
+  /** 아직 완료하지 않은 레슨이면 true를 반환하며 XP를 지급한다. 이미 완료한 레슨이면 false를 반환하고 아무 것도 하지 않는다. */
+  completeLesson: (lessonId: string) => boolean;
   /** 퀴즈 결과를 기록하고 정답 수에 비례한 XP를 지급한 뒤, 지급된 XP를 반환한다. */
   recordQuizResult: (score: number, total: number) => number;
 }
-
-const XP_PER_LESSON = 20;
-const XP_PER_CORRECT_ANSWER = 10;
-export const XP_PER_LEVEL = 100;
 
 // 임시 초기 데이터 (아직 DB/백엔드 연동 전)
 const initialState: ProgressState = {
@@ -30,14 +28,13 @@ const initialState: ProgressState = {
 
 const ProgressContext = createContext<ProgressContextValue | undefined>(undefined);
 
-function levelFromXp(xp: number): number {
-  return Math.floor(xp / XP_PER_LEVEL) + 1;
-}
-
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<ProgressState>(initialState);
 
-  const completeLesson = (lessonId: string) => {
+  const completeLesson = (lessonId: string): boolean => {
+    if (state.completedLessonIds.includes(lessonId)) {
+      return false;
+    }
     setState((prev) => {
       if (prev.completedLessonIds.includes(lessonId)) {
         return prev;
@@ -50,6 +47,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         completedLessonIds: [...prev.completedLessonIds, lessonId],
       };
     });
+    return true;
   };
 
   const recordQuizResult = (score: number, total: number): number => {

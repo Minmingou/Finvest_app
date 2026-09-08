@@ -1,22 +1,21 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { useProgress, XP_PER_LEVEL } from '../services/progress';
+import { useProgress } from '../services/progress';
+import { xpIntoCurrentLevel, xpToNextLevel, levelProgressRatio, XP_PER_LEVEL } from '../utils/xp';
+import { ProgressBar } from './ProgressBar';
 
-export function LevelProgress() {
+export function XPDisplay() {
   const { level, xp } = useProgress();
-  const xpIntoLevel = xp % XP_PER_LEVEL;
-  const progressRatio = xpIntoLevel / XP_PER_LEVEL;
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.levelText}>Level {level}</Text>
         <Text style={styles.xpText}>
-          {xpIntoLevel} / {XP_PER_LEVEL} XP
+          {xpIntoCurrentLevel(xp)} / {XP_PER_LEVEL} XP
         </Text>
       </View>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${progressRatio * 100}%` }]} />
-      </View>
+      <ProgressBar progress={levelProgressRatio(xp)} />
+      <Text style={styles.nextLevelText}>다음 레벨까지 {xpToNextLevel(xp)} XP</Text>
     </View>
   );
 }
@@ -26,6 +25,5 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   levelText: { fontSize: 16, fontWeight: '700' },
   xpText: { fontSize: 12, color: '#888' },
-  track: { height: 10, borderRadius: 5, backgroundColor: '#eee', overflow: 'hidden' },
-  fill: { height: '100%', backgroundColor: '#222', borderRadius: 5 },
+  nextLevelText: { fontSize: 12, color: '#888', marginTop: 6 },
 });
